@@ -63,3 +63,73 @@ class _ContactState extends State<Contact> {
     _urlController.dispose();
     super.dispose();
   }
+   void _toggleEditMode() {
+    setState(() {
+      _isEditing = !_isEditing;
+      if (!_isEditing) {
+        _saveChanges();
+      }
+    });
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 75,
+      );
+
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        setState(() {
+          _selectedImageBase64 = base64Encode(bytes);
+          isBase64 = true;
+        });
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+    }
+  }
+  Widget _getImageWidget() {
+    if (_selectedImageBase64 != null && _selectedImageBase64!.isNotEmpty) {
+      try {
+        return Image.memory(
+          base64Decode(_selectedImageBase64!),
+          width: double.infinity,
+          fit: BoxFit.cover,
+          height: 300,
+        );
+      } catch (e) {
+        print('Error decoding image: $e');
+      }
+    } else if (isBase64) {
+      return Image.memory(
+        base64Decode(photo),
+        width: double.infinity,
+        fit: BoxFit.cover,
+        height: 300,
+      );
+    }
+
+    return Image.network(
+      photo,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      height: 300,
+      errorBuilder: (context, error, stackTrace) => Container(
+        height: 300,
+        color: CupertinoColors.systemGrey.withOpacity(0.2),
+        child: Icon(CupertinoIcons.person_crop_circle_fill, size: 100, color: CupertinoColors.systemGrey),
+      ),
+    );
+  }
+
+  void _saveChanges() {
+    name = _nameController.text;
+    email = _emailController.text;
+    url = _urlController.text;
+
+    if (_selectedImageBase64 != null) {
+      photo = _selectedImageBase64!;
+      isBase64 = true;
+    }
