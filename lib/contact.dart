@@ -285,3 +285,52 @@ class _ContactState extends State<Contact> {
                           ),
                         ),
 
+    // Quick Action Buttons
+                        if (!_isEditing) ...[
+                          SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildActionButton(
+                                  icon: CupertinoIcons.bubble_left_bubble_right_fill,
+                                  label: 'Message',
+                                  onPressed: () async {
+                                    final String primaryPhone = phoneNumbers.isNotEmpty ? phoneNumbers[0]['number'] ?? '' : phone;
+                                    final Uri uri = Uri.parse('sms:$primaryPhone');
+                                    await launchUrl(uri);
+                                  },
+                                ),
+                                _buildActionButton(
+                                  icon: CupertinoIcons.phone_fill,
+                                  label: 'Call',
+                                  onPressed: () async {
+                                    final String primaryPhone = phoneNumbers.isNotEmpty ? phoneNumbers[0]['number'] ?? '' : phone;
+                                    final Uri uri = Uri.parse('tel:$primaryPhone');
+                                    await launchUrl(uri);
+                                  },
+                                ),
+                                _buildActionButton(
+                                  icon: CupertinoIcons.videocam_fill,
+                                  label: 'Video',
+                                  onPressed: () {},
+                                ),
+                                _buildActionButton(
+                                  icon: CupertinoIcons.envelope_fill,
+                                  label: 'Mail',
+                                  onPressed: () async {
+                                    final Uri uri = Uri.parse('mailto:$email');
+                                    await launchUrl(uri);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
