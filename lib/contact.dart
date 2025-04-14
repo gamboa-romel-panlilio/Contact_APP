@@ -63,7 +63,8 @@ class _ContactState extends State<Contact> {
     _urlController.dispose();
     super.dispose();
   }
-   void _toggleEditMode() {
+
+  void _toggleEditMode() {
     setState(() {
       _isEditing = !_isEditing;
       if (!_isEditing) {
@@ -133,7 +134,8 @@ class _ContactState extends State<Contact> {
       photo = _selectedImageBase64!;
       isBase64 = true;
     }
- if (_phoneNumbersEditing.isNotEmpty) {
+
+    if (_phoneNumbersEditing.isNotEmpty) {
       phoneNumbers = List<Map<String, dynamic>>.from(_phoneNumbersEditing);
       phone = _phoneNumbersEditing[0]['number'] ?? '';
     }
@@ -228,7 +230,8 @@ class _ContactState extends State<Contact> {
                         onPressed: _pickImage,
                       ),
                     ),
- // Name and Action Buttons
+
+                  // Name and Action Buttons
                   Positioned(
                     bottom: 20,
                     left: 0,
@@ -285,7 +288,7 @@ class _ContactState extends State<Contact> {
                           ),
                         ),
 
-    // Quick Action Buttons
+                        // Quick Action Buttons
                         if (!_isEditing) ...[
                           SizedBox(height: 16),
                           Padding(
@@ -334,3 +337,353 @@ class _ContactState extends State<Contact> {
                 ],
               ),
             ),
+
+            // Contact Details Section
+            SliverPadding(
+              padding: EdgeInsets.all(20),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  // Phone Numbers Section
+                  _buildSectionHeader(
+                    title: 'Phone Numbers',
+                    trailing: _isEditing
+                        ? CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      child: Icon(CupertinoIcons.add_circled, size: 24, color: CupertinoColors.activeBlue),
+                      onPressed: _addPhoneNumber,
+                    )
+                        : null,
+                  ),
+                  SizedBox(height: 12),
+
+                  if (_isEditing)
+                    ...List.generate(_phoneNumbersEditing.length, (index) {
+                      return _buildEditablePhoneNumber(index);
+                    })
+                  else if (phoneNumbers.isNotEmpty)
+                    ...phoneNumbers.map((phoneData) => _buildPhoneNumberItem(phoneData)).toList()
+                  else if (phone.isNotEmpty)
+                      _buildPhoneNumberItem({'label': 'mobile', 'number': phone})
+                    else
+                      _buildEmptyPlaceholder('No phone numbers available'),
+
+                  SizedBox(height: 24),
+
+                  // Email Section
+                  _buildSectionHeader(title: 'Email'),
+                  SizedBox(height: 12),
+
+                  _isEditing
+                      ? _buildEditableEmail()
+                      : email.isNotEmpty
+                      ? _buildEmailItem()
+                      : _buildEmptyPlaceholder('No email available'),
+
+                  SizedBox(height: 24),
+
+                  // Website Section
+                  _buildSectionHeader(title: 'Website'),
+                  SizedBox(height: 12),
+
+                  _isEditing
+                      ? _buildEditableWebsite()
+                      : url.isNotEmpty
+                      ? _buildWebsiteItem()
+                      : _buildEmptyPlaceholder('No website available'),
+
+                  SizedBox(height: 40),
+                ]),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader({required String title, Widget? trailing}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: CupertinoColors.systemGrey,
+          ),
+        ),
+        if (trailing != null) trailing,
+      ],
+    );
+  }
+
+  Widget _buildActionButton({required IconData icon, required String label, required VoidCallback onPressed}) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onPressed,
+      child: Column(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: CupertinoColors.systemGrey.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(25),
+            ),
+            child: Icon(icon, color: CupertinoColors.white, size: 24),
+          ),
+          SizedBox(height: 6),
+          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: CupertinoColors.white)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditablePhoneNumber(int index) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: CupertinoColors.systemGrey.withOpacity(0.1),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Label dropdown
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _phoneNumbersEditing[index]['label'] ?? 'mobile',
+                          style: TextStyle(fontSize: 13, color: CupertinoColors.systemGrey),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(CupertinoIcons.chevron_down, size: 12, color: CupertinoColors.systemGrey),
+                      ],
+                    ),
+                    onPressed: () => _showLabelPicker(index),
+                  ),
+
+                  // Phone number text field
+                  CupertinoTextField(
+                    placeholder: 'Number',
+                    placeholderStyle: TextStyle(color: CupertinoColors.systemGrey.withOpacity(0.5)),
+                    keyboardType: TextInputType.phone,
+                    style: TextStyle(fontSize: 16),
+                    decoration: null,
+                    padding: EdgeInsets.zero,
+                    controller: TextEditingController(text: _phoneNumbersEditing[index]['number'] ?? ''),
+                    onChanged: (value) => _phoneNumbersEditing[index]['number'] = value,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Delete button
+          CupertinoButton(
+            padding: EdgeInsets.only(left: 8, top: 12),
+            child: Icon(CupertinoIcons.delete, size: 20, color: CupertinoColors.destructiveRed),
+            onPressed: () => _removePhoneNumber(index),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLabelPicker(int index) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (BuildContext context) => CupertinoActionSheet(
+        title: Text('Select Label', style: TextStyle(fontSize: 16)),
+        actions: <CupertinoActionSheetAction>[
+          _buildLabelAction('mobile', index),
+          _buildLabelAction('home', index),
+          _buildLabelAction('work', index),
+          _buildLabelAction('other', index),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          child: Text('Cancel', style: TextStyle(color: CupertinoColors.systemBlue)),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+    );
+  }
+
+  CupertinoActionSheetAction _buildLabelAction(String label, int index) {
+    return CupertinoActionSheetAction(
+      child: Text(label),
+      onPressed: () {
+        setState(() => _phoneNumbersEditing[index]['label'] = label);
+        Navigator.pop(context);
+      },
+    );
+  }
+Widget _buildPhoneNumberItem(Map<String, dynamic> phoneData) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GestureDetector(
+        onTap: () async {
+          final Uri uri = Uri.parse('tel:${phoneData['number']}');
+          await launchUrl(uri);
+        },
+        child: Container(
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: CupertinoColors.systemGrey.withOpacity(0.1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                phoneData['label'] ?? 'phone',
+                style: TextStyle(fontSize: 13, color: CupertinoColors.systemGrey),
+              ),
+              SizedBox(height: 4),
+              Text(
+                phoneData['number'] ?? '',
+                style: TextStyle(fontSize: 16, color: CupertinoColors.systemBlue),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditableEmail() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: CupertinoColors.systemGrey.withOpacity(0.1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('email', style: TextStyle(fontSize: 13, color: CupertinoColors.systemGrey)),
+          SizedBox(height: 4),
+          CupertinoTextField(
+            controller: _emailController,
+            placeholder: 'Email address',
+            placeholderStyle: TextStyle(color: CupertinoColors.systemGrey.withOpacity(0.5)),
+            keyboardType: TextInputType.emailAddress,
+            style: TextStyle(fontSize: 16),
+            decoration: null,
+            padding: EdgeInsets.zero,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmailItem() {
+    return GestureDetector(
+      onTap: () async {
+        final Uri uri = Uri.parse('mailto:$email');
+        await launchUrl(uri);
+      },
+      child: Container(
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: CupertinoColors.systemGrey.withOpacity(0.1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('email', style: TextStyle(fontSize: 13, color: CupertinoColors.systemGrey)),
+            SizedBox(height: 4),
+            Text(
+              email,
+              style: TextStyle(fontSize: 16, color: CupertinoColors.systemBlue),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+ Widget _buildEditableWebsite() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: CupertinoColors.systemGrey.withOpacity(0.1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('url', style: TextStyle(fontSize: 13, color: CupertinoColors.systemGrey)),
+          SizedBox(height: 4),
+          CupertinoTextField(
+            controller: _urlController,
+            placeholder: 'Website URL',
+            placeholderStyle: TextStyle(color: CupertinoColors.systemGrey.withOpacity(0.5)),
+            keyboardType: TextInputType.url,
+            style: TextStyle(fontSize: 16),
+            decoration: null,
+            padding: EdgeInsets.zero,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWebsiteItem() {
+    return GestureDetector(
+      onTap: () async {
+        final Uri uri = Uri.parse(url);
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      },
+      child: Container(
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: CupertinoColors.systemGrey.withOpacity(0.1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('url', style: TextStyle(fontSize: 13, color: CupertinoColors.systemGrey)),
+            SizedBox(height: 4),
+            Text(
+              url,
+              style: TextStyle(fontSize: 16, color: CupertinoColors.systemBlue),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyPlaceholder(String text) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: CupertinoColors.systemGrey.withOpacity(0.1),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 16, color: CupertinoColors.systemGrey),
+      ),
+    );
+  }
+}
