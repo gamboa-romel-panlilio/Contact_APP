@@ -133,3 +133,99 @@ class _ContactState extends State<Contact> {
       photo = _selectedImageBase64!;
       isBase64 = true;
     }
+ if (_phoneNumbersEditing.isNotEmpty) {
+      phoneNumbers = List<Map<String, dynamic>>.from(_phoneNumbersEditing);
+      phone = _phoneNumbersEditing[0]['number'] ?? '';
+    }
+
+    if (_contactIndex != null) {
+      List<dynamic> contacts = _myBox.get('contacts') ?? [];
+      contacts[_contactIndex!] = {
+        "name": name,
+        "company": contacts[_contactIndex!]['company'] ?? '',
+        "phone": phone,
+        "phoneNumbers": phoneNumbers,
+        "email": email,
+        "url": url,
+        "photo": photo,
+        "isBase64": isBase64,
+      };
+      _myBox.put('contacts', contacts);
+    }
+  }
+ void _addPhoneNumber() {
+    setState(() {
+      _phoneNumbersEditing.add({'label': 'mobile', 'number': ''});
+    });
+  }
+
+  void _removePhoneNumber(int index) {
+    setState(() {
+      _phoneNumbersEditing.removeAt(index);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      child: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  // Header Image
+                  _getImageWidget(),
+
+                  // Back Button
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: CupertinoButton(
+                      padding: EdgeInsets.all(12),
+                      borderRadius: BorderRadius.circular(20),
+                      color: CupertinoColors.systemGrey.withOpacity(0.4),
+                      child: Icon(CupertinoIcons.chevron_back, size: 20, color: CupertinoColors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+
+                  // Edit/Save Button
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: CupertinoButton(
+                      padding: EdgeInsets.all(12),
+                      borderRadius: BorderRadius.circular(20),
+                      color: CupertinoColors.systemGrey.withOpacity(0.4),
+                      child: Icon(
+                        _isEditing ? CupertinoIcons.checkmark_alt : CupertinoIcons.pencil,
+                        size: 20,
+                        color: CupertinoColors.white,
+                      ),
+                      onPressed: _toggleEditMode,
+                    ),
+                  ),
+
+                  // Change Photo Button (only in edit mode)
+                  if (_isEditing)
+                    Positioned(
+                      top: 60,
+                      right: 10,
+                      child: CupertinoButton(
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        borderRadius: BorderRadius.circular(20),
+                        color: CupertinoColors.systemGrey.withOpacity(0.6),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(CupertinoIcons.photo, size: 16, color: CupertinoColors.white),
+                            SizedBox(width: 5),
+                            Text("Change Photo", style: TextStyle(fontSize: 14, color: CupertinoColors.white)),
+                          ],
+                        ),
+                        onPressed: _pickImage,
+                      ),
+                    ),
+
