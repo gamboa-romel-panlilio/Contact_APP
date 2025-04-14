@@ -228,4 +228,60 @@ class _ContactState extends State<Contact> {
                         onPressed: _pickImage,
                       ),
                     ),
+ // Name and Action Buttons
+                  Positioned(
+                    bottom: 20,
+                    left: 0,
+                    right: 0,
+                    child: Column(
+                      children: [
+                        // Last Used indicator
+                        if (!_isEditing) ...[
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("last used: ", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: CupertinoColors.white)),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(4),
+                                    color: CupertinoColors.white.withOpacity(0.9),
+                                  ),
+                                  child: Text("P", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: CupertinoColors.black)),
+                                ),
+                                SizedBox(width: 4),
+                                Text("Primary", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: CupertinoColors.white)),
+                                Icon(CupertinoIcons.chevron_forward, size: 12, color: CupertinoColors.white),
+                              ],
+                            ),
+                          ),
+                        ],
+
+                        // Name Field
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _isEditing
+                              ? CupertinoTextField(
+                            controller: _nameController,
+                            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600, color: CupertinoColors.white),
+                            placeholder: 'Name',
+                            placeholderStyle: TextStyle(color: CupertinoColors.white.withOpacity(0.7)),
+                            decoration: BoxDecoration(
+                              color: CupertinoColors.systemGrey.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          )
+                              : Text(
+                            name,
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w600,
+                              color: CupertinoColors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
 
